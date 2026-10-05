@@ -547,6 +547,67 @@ async function replyTextMessage(messageId: string, text: string): Promise<string
   return msgId
 }
 
+// ── Markdown → Feishu card ───────────────────────────────────────────────────
+// Feishu plain-text messages don't render markdown: Claude's replies arrive with
+// literal ** markers, raw |table| rows, and [x](y) link syntax. Interactive
+// cards render the supported markdown subset (bold, links, lists, code, hr).
+// Markdown tables aren't supported by card markdown at all, so table blocks are
+// wrapped in code fences to preserve their column alignment, and headings
+// (# ...) are converted to bold lines since card markdown has no heading tag.
+const CARD_CHUNK = 4000 // CJK chars are 3 bytes in UTF-8; keep the card JSON safely under the size limit
+
+function markdownToCard(text: string): string {
+  const lines: string[] = []
+  let inTable = false
+  for (const line of text.split('\n')) {
+    const isTableRow = /^\s*\|.*\|\s*$/.test(line)
+    if (isTableRow && !inTable) {
+      inTable = true
+      lines.push('```')
+      lines.push(line)
+      continue
+    }
+    if (!isTableRow && inTable) {
+      inTable = false
+      lines.push('```')
+    }
+    const h = line.match(/^#{1,6}\s+(.*)$/)
+    lines.push(h ? `**${h[1]}**` : line)
+  }
+  if (inTable) lines.push('```')
+  return JSON.stringify({
+    config: { wide_screen_mode: true },
+    elements: [{ tag: 'markdown', content: lines.join('\n') }],
+  })
+}
+
+async function sendCardMessage(chatId: string, text: string): Promise<string> {
+  const resp = await feishuClient.im.message.create({
+    params: { receive_id_type: 'chat_id' },
+    data: {
+      receive_id: chatId,
+      msg_type: 'interactive',
+      content: markdownToCard(text),
+    },
+  })
+  const msgId = resp?.data?.message_id ?? resp?.message_id ?? ''
+  if (msgId) noteSent(msgId)
+  return msgId
+}
+
+async function replyCardMessage(messageId: string, text: string): Promise<string> {
+  const resp = await feishuClient.im.message.reply({
+    path: { message_id: messageId },
+    data: {
+      msg_type: 'interactive',
+      content: markdownToCard(text),
+    },
+  })
+  const msgId = resp?.data?.message_id ?? resp?.message_id ?? ''
+  if (msgId) noteSent(msgId)
+  return msgId
+}
+
 async function uploadAndSendFile(
   chatId: string,
   filePath: string,
@@ -825,7 +886,10 @@ mcp.setRequestHandler(CallToolRequestSchema, async (req) => {
         }
 
         const access = loadAccess()
-        const limit = Math.max(1, access.textChunkLimit ?? MAX_TEXT_CHUNK)
+        const limit = Math.min(
+          Math.max(1, access.textChunkLimit ?? MAX_TEXT_CHUNK),
+          CARD_CHUNK,
+        )
         const chunks = chunk(text, limit)
         const sentIds: string[] = []
 
@@ -834,9 +898,9 @@ mcp.setRequestHandler(CallToolRequestSchema, async (req) => {
             let msgId: string
             if (replyTo && i === 0) {
               // First chunk: quote-reply to the specified message
-              msgId = await replyTextMessage(replyTo, chunks[i])
+              msgId = await replyCardMessage(replyTo, chunks[i])
             } else {
-              msgId = await sendTextMessage(chatId, chunks[i])
+              msgId = await sendCardMessage(chatId, chunks[i])
             }
             sentIds.push(msgId)
           }
@@ -929,8 +993,8 @@ mcp.setRequestHandler(CallToolRequestSchema, async (req) => {
         await feishuClient.im.message.update({
           path: { message_id: messageId },
           data: {
-            msg_type: 'text',
-            content: JSON.stringify({ text }),
+            msg_type: 'interactive',
+            content: markdownToCard(text),
           },
         })
 
