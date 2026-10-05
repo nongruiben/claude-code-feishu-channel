@@ -2,9 +2,14 @@
 
 > 让 Claude Code 连接飞书 —— 在飞书聊天中直接与 Claude 对话，像真人助手一样帮你写代码、查问题、做任务。
 
-> **本仓库是 [whobot-ai/claude-code-feishu-channel](https://github.com/whobot-ai/claude-code-feishu-channel) 的 fork（v0.1.0），新增手机端权限审批**：
-> Claude Code 的权限请求（工具调用审批）会推送到白名单用户的飞书私聊，回复 `y <5位码>` 批准、`n <5位码>` 拒绝，无需回到电脑终端。
-> 实现移植自官方 Telegram Channel 插件的 permission-relay 协议（`claude/channel/permission`），补丁位置见 `plugin/server.ts` 中 "Permission relay" 一节。
+> **本仓库是 [whobot-ai/claude-code-feishu-channel](https://github.com/whobot-ai/claude-code-feishu-channel) 的 fork（当前 v0.1.3），用于量化项目 `quant_research_lab` 的手机端长期远端管理**。在原作者基础上新增：
+>
+> 1. **手机端权限审批**（v0.1.0）：Claude Code 的权限请求推送到白名单用户飞书私聊，回复 `y <5位码>` 批准 / `n <5位码>` 拒绝。移植自官方 Telegram 插件的 permission-relay 协议（`claude/channel/permission`）。
+> 2. **渠道模式门控**（v0.1.1）：只有环境变量 `QRL_FEISHU_CHANNEL=1` 的会话才真正连接飞书 WebSocket；同一项目中普通会话拉起插件时静默退出，避免多连接抢消息。
+> 3. **回复渲染为飞书卡片**（v0.1.2）：纯文本不渲染 Markdown，现在回复以 interactive 卡片发送（加粗/链接/列表/代码正常显示，Markdown 表格自动转代码块保持对齐，标题转粗体行）。
+> 4. **启动脚本抗脆化**（v0.1.3）：`bun install` 失败不再阻断 server 启动（`&&` → `;`）。
+>
+> 部署与运维详见配套仓库 `nongruiben/lark-quant-bridge` 的 `HANDOVER.md`（含全部踩坑记录）。
 
 <p align="center">
   <img src="https://img.shields.io/badge/Claude_Code-Channel_Plugin-7C3AED?style=for-the-badge&logo=anthropic" alt="Claude Code Channel Plugin" />
