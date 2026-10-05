@@ -54,6 +54,20 @@ try {
   }
 } catch {}
 
+// ── Channel-mode gate ────────────────────────────────────────────────────────
+// This plugin is enabled project-wide in quant_research_lab, so every plain
+// session there would also spawn this server. Two live Feishu WebSocket
+// connections on the same app make inbound delivery nondeterministic (messages
+// get consumed by a session that isn't the bridge). Only the bridge launcher
+// (claude-bridge-lark/bridge-launch.bat) sets this variable; every other spawn
+// exits quietly before touching the network.
+if (process.env.QRL_FEISHU_CHANNEL !== '1') {
+  process.stderr.write(
+    'feishu channel: not the bridge session (QRL_FEISHU_CHANNEL != 1) - exiting\n',
+  )
+  process.exit(0)
+}
+
 const APP_ID = process.env.FEISHU_APP_ID
 const APP_SECRET = process.env.FEISHU_APP_SECRET
 const STATIC = process.env.FEISHU_ACCESS_MODE === 'static'
