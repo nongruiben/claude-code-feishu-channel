@@ -1,6 +1,6 @@
 {
   "name": "claude-channel-feishu",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "license": "MIT",
   "type": "module",
   "bin": "./server.ts",
@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "@larksuiteoapi/node-sdk": "^1.59.0"
+    "@larksuiteoapi/node-sdk": "^1.59.0",
+    "zod": "^3.25.0"
   }
 }

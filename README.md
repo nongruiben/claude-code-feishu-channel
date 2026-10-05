@@ -2,6 +2,10 @@
 
 > 让 Claude Code 连接飞书 —— 在飞书聊天中直接与 Claude 对话，像真人助手一样帮你写代码、查问题、做任务。
 
+> **本仓库是 [whobot-ai/claude-code-feishu-channel](https://github.com/whobot-ai/claude-code-feishu-channel) 的 fork（v0.1.0），新增手机端权限审批**：
+> Claude Code 的权限请求（工具调用审批）会推送到白名单用户的飞书私聊，回复 `y <5位码>` 批准、`n <5位码>` 拒绝，无需回到电脑终端。
+> 实现移植自官方 Telegram Channel 插件的 permission-relay 协议（`claude/channel/permission`），补丁位置见 `plugin/server.ts` 中 "Permission relay" 一节。
+
 <p align="center">
   <img src="https://img.shields.io/badge/Claude_Code-Channel_Plugin-7C3AED?style=for-the-badge&logo=anthropic" alt="Claude Code Channel Plugin" />
   <img src="https://img.shields.io/badge/飞书-Feishu_/_Lark-00D6B9?style=for-the-badge" alt="Feishu / Lark" />

@@ -1,16 +1,16 @@
 {
   "name": "claude-code-feishu-channel",
   "owner": {
-    "name": "whobot-ai"
+    "name": "nongruiben"
   },
   "metadata": {
-    "description": "飞书（Feishu/Lark）Channel 插件 for Claude Code",
-    "homepage": "https://github.com/whobot-ai/claude-code-feishu-channel"
+    "description": "飞书（Feishu/Lark）Channel 插件 for Claude Code（fork：新增手机端权限审批）",
+    "homepage": "https://github.com/nongruiben/claude-code-feishu-channel"
   },
   "plugins": [
     {
       "name": "feishu",
-      "version": "0.0.1",
+      "version": "0.1.0",
       "source": "./plugin",
       "description": "Feishu (飞书/Lark) channel for Claude Code — messaging bridge with built-in access control."
     }
